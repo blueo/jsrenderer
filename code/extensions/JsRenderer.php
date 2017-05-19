@@ -6,7 +6,7 @@ class JsRenderer extends LeftAndMainExtension implements Flushable
     private $cache;
 
     private static $allowed_actions = array(
-        'getUrlsToRender',
+        'getJsRenderJobs',
         'getUrlRenderData',
         'storeRenderedTemplate',
     );
@@ -17,12 +17,11 @@ class JsRenderer extends LeftAndMainExtension implements Flushable
         Requirements::javascript(JSRENDERER_DIR . '/javascript/dist/index.js');
     }
 
-    public function getUrlsToRender()
+    public function getJsRenderJobs()
     {
-        $urls = Config::inst()->get('JsRenderer', 'urls');
-
-
-        return json_encode($urls);
+        $jobs = JsRenderJob::get()->exclude('Complete', true);
+        $formatter = new JSONDataFormatter();
+        return $formatter->convertDataObjectSet($jobs);
     }
 
     public function getUrlRenderData()
