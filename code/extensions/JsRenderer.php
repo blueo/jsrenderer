@@ -6,7 +6,7 @@ class JsRenderer extends LeftAndMainExtension implements Flushable
     private $cache;
 
     private static $allowed_actions = array(
-        'getJsRenderJobs',
+        'getJsRenderJob',
         'getUrlRenderData',
         'storeRenderedTemplate',
     );
@@ -17,21 +17,22 @@ class JsRenderer extends LeftAndMainExtension implements Flushable
         Requirements::javascript(JSRENDERER_DIR . '/javascript/dist/index.js');
     }
 
-    public function getJsRenderJobs()
+    public function getJsRenderJob()
     {
-        $jobs = JsRenderJob::get()->exclude('Complete', true);
-        $formatter = new JSONDataFormatter();
-        return $formatter->convertDataObjectSet($jobs);
-    }
+        $url = StaticPagesQueue::get_next_url(); // TODO use static publisher URLS
+        $page = SiteTree::get_by_link($url);
+        $worker = singleton($page->ClassName)->stat('jsrenderer_worker');
+        // get worker path from config
+        $workers = Config::inst()->get(static::class, 'workers');
 
-    public function getUrlRenderData()
-    {
-        $link = $this->owner->getRequest()->getVar('link');
-        $obj = SiteTree::get_by_link($link);
-        $apiController = new InternalAPIController();
-        $json = $apiController->convertToJSON($obj);
+        $formatter = new JSONDataFormatter();
+        $job = array(
+            'Url' => $url,
+            'Worker' => $workers[$worker],
+        );
+        $this->owner->extend('updateJsRenderJob', $job);
         $this->owner->response->addHeader('Content-Type', 'application/json');
-        return $json;
+        return json_encode($job);
     }
 
     public function storeRenderedTemplate()
@@ -40,6 +41,7 @@ class JsRenderer extends LeftAndMainExtension implements Flushable
         $body = json_decode($rq->getBody());
         $cache = $this->getCache();
         $cache->save(json_decode($body->html), md5($body->key));
+        StaticPagesQueue::delete_by_link($body->key);
         $this->owner->response->addHeader('Content-Type', 'application/json');
         return json_encode('saved template');
     }

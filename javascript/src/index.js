@@ -23,10 +23,8 @@ function saveHtmlToCache({data: { html, key } }) {
     .then(response => response.json());
 }
 
-
-
-if (global.window.Worker) {
-  fetch('/admin/pages/getJsRenderJobs', {
+function checkForJob() {
+  fetch('/admin/pages/getJsRenderJob', {
     credentials: 'same-origin',
     headers: {
       'X-Requested-With': 'XMLHttpRequest',
@@ -34,18 +32,21 @@ if (global.window.Worker) {
     },
   })
   .then(response => response.json())
-  .then(({ items: jobs }) => {
+  .then((job) => {
     const workers = [];
-    if (jobs && jobs.length) {
-      jobs.forEach((job) => {
-        const { Worker: workerpath } = job;
-        const processingJob = new Worker(workerpath);
-        workers.push(processingJob);
-        processingJob.postMessage(job);
-        processingJob.onmessage = saveHtmlToCache;
-      });
+    if (job) {
+      const { Worker: workerpath } = job;
+      const processingJob = new Worker(workerpath);
+      workers.push(processingJob);
+      processingJob.postMessage(job);
+      processingJob.onmessage = (...args) => saveHtmlToCache.apply(this, args).then(checkForJob);
     } else {
       console.log('No render job found')
     }
   });
+}
+
+
+if (global.window.Worker) {
+  checkForJob();
 }
