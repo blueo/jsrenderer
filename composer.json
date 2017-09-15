@@ -1,0 +1,8 @@
+{
+  "name": "blueo/jsrenderer",
+  "description": "Javascript Silverstripe Template renderer using web workers",
+  "type": "silverstripe-module",
+  "require": {
+    "silverstripe/staticpublishqueue": "3.3.0"
+  }
+}
