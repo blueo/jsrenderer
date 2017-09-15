@@ -5,7 +5,6 @@ const path = require('path');
 module.exports = {
   entry: {
     index: './src/index.js',
-    worker: './src/worker.js',
   },
   output: {
     path: path.resolve('dist'),

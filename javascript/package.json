@@ -11,6 +11,9 @@
   "devDependencies": {
     "babel-core": "^6.24.1",
     "babel-loader": "^7.0.0",
+    "debug": "^3.0.1",
+    "energy": "^0.7.1",
+    "often": "^0.3.2",
     "webpack": "^2.5.1"
   }
 }
