@@ -79,3 +79,7 @@ onmessage = function(e) {
 ```
 
 The main script will send whatever the worker posts back to the server to be saved in the cache. 
+
+## debugging
+
+The main script uses [debug](https://github.com/visionmedia/debug#browser-support) for logging, to turn it on enter `localStorage.debug = '*'` in the browser.
